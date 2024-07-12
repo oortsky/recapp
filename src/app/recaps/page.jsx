@@ -7,7 +7,6 @@ export default function Recaps() {
   const [recaps, setRecaps] = useState([]);
   const [types, setTypes] = useState([]);
   const [amount, setAmount] = useState("");
-  const [income, setIncome] = useState("");
   const [selectedType, setSelectedType] = useState("");
   const [deleteId, setDeleteId] = useState(null);
   const [updateId, setUpdateId] = useState(null);
@@ -60,26 +59,27 @@ export default function Recaps() {
     return name;
   }
 
+  function searchIncome(id, amount) {
+    const price = types.find(type => type.id == id)?.price;
+    const total = parseInt(amount) * price;
+    return total;
+  }
+
   const handleSubmit = async e => {
     e.preventDefault();
-
-    const price = types.find(type => type.id === selectedType)?.price;
-    const totalIncome = parseInt(amount) * price;
 
     const data = {
       amount: amount,
       type: selectedType,
       date: new Date(),
-      income: totalIncome
+      income: searchIncome(selectedType, amount)
     };
 
     createAPI("recaps", data)
       .then(response => {
         setAmount("");
         setSelectedType("");
-        setIncome("");
         console.log("Data created:", response);
-        fetchRecapsData();
       })
       .catch(error => {
         console.error("Error creating data:", error);
@@ -115,41 +115,30 @@ export default function Recaps() {
   };
 
   const handleUpdate = async id => {
-    const price = types.find(type => type.id === selectedType)?.price;
-    const totalIncome = parseInt(amount) * price;
-
     const data = {
       amount: amount,
       type: selectedType,
       date: new Date(),
-      income: totalIncome
+      income: searchIncome(selectedType, amount)
     };
 
     updateAPI("recaps", id, data)
       .then(response => {
         setAmount("");
         setSelectedType("");
-        setIncome("");
         console.log("Data updated:", response);
-        fetchRecapsData();
       })
       .catch(error => {
         console.error("Error updating data:", error);
       });
   };
+
   const handleUpdateModal = id => {
     setUpdateId(id);
     const editRecap = recaps.find(recap => recap.id === id);
     setAmount(editRecap.amount);
     setSelectedType(editRecap.type);
-    searchIncome(editRecap.type);
     document.getElementById("edit_recap").showModal();
-  };
-
-  const searchIncome = id => {
-    const price = types.find(type => type.id === id)?.price;
-    const totalIncome = parseInt(amount) * price;
-    setIncome(totalIncome);
   };
 
   const handleConfirmUpdate = async () => {
@@ -264,10 +253,7 @@ export default function Recaps() {
             <select
               className="select select-bordered select-sm w-full max-w-xs"
               value={selectedType}
-              onChange={e => {
-                setSelectedType(e.target.value);
-                searchPrice(e.target.value);
-              }}
+              onChange={e => setSelectedType(e.target.value)}
               required
             >
               <option disabled value="">
@@ -325,7 +311,6 @@ export default function Recaps() {
                   onClick={() => {
                     setAmount("");
                     setSelectedType("");
-                    setIncome("");
                   }}
                 >
                   Cancel
