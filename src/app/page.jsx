@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { fetchAPI } from "../utils/api";
+import * as XLSX from "xlsx";
 
 export default function Home() {
   const [recaps, setRecaps] = useState([]);
@@ -150,6 +151,13 @@ export default function Home() {
     return humanReadableDate;
   }
 
+  function changeFormatDate(date) {
+    let partsDate = date.split("-");
+    let newDate = `${partsDate[2]}/${partsDate[1]}/${partsDate[0]}`;
+
+    return newDate;
+  }
+
   const getPercentageChange = () => {
     if (previousMonthIncome === 0) {
       return 0;
@@ -161,6 +169,120 @@ export default function Home() {
     const percentageChange = (change / previousMonthIncome) * 100;
 
     return percentageChange.toFixed(2);
+  };
+
+  //   const exportToExcel = () => {
+  //     const wb = XLSX.utils.book_new();
+  //     const ws = XLSX.utils.aoa_to_sheet([["A1-B1"]]);
+  //
+  //     let rowIndex = 2;
+  //     let colIndex = 0;
+  //
+  //     for (const type in groupedByType) {
+  //       if (groupedByType.hasOwnProperty(type)) {
+  //         const data = groupedByType[type];
+  //
+  //         const filteredData = data.map(item => [
+  //           `${item.amount} pcs`,
+  //           changeFormatDate(item.date)
+  //         ]);
+  //
+  //         const sheetName = searchName(type);
+  //
+  //         XLSX.utils.sheet_add_aoa(ws, [[`${sheetName}`]], {
+  //           origin: XLSX.utils.encode_cell({ r: 0, c: colIndex })
+  //         });
+  //
+  //         XLSX.utils.sheet_add_aoa(ws, filteredData, {
+  //           origin: XLSX.utils.encode_cell({ r: 1, c: colIndex })
+  //         });
+  //
+  //         colIndex += filteredData[0].length + 1;
+  //       }
+  //     }
+  //
+  //     let id =
+  //       new Date().getFullYear().toString() +
+  //       ("0" + (new Date().getMonth() + 1)).slice(-2);
+  //
+  //     XLSX.utils.book_append_sheet(wb, ws, `RECAP-${id}`);
+  //
+  //     XLSX.writeFile(wb, `RECAP_${id}.xlsx`);
+  //   };
+
+  const exportToExcel = () => {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([["A1-B1"]]);
+
+    let rowIndex = 2;
+    let colIndex = 0;
+
+    // Style untuk header
+    const headerStyle = {
+      font: { bold: true, color: { rgb: "FFFFFF" } }, // Tebal dan warna putih
+      fill: { patternType: "solid", fgColor: { rgb: "2F75B5" } }, // Warna biru untuk latar belakang
+      border: {
+        top: { style: "thin" },
+        bottom: { style: "thin" },
+        left: { style: "thin" },
+        right: { style: "thin" }
+      } // Garis tepi tipis
+    };
+
+    // Style untuk nilai
+    const valueStyle = {
+      border: {
+        top: { style: "thin" },
+        bottom: { style: "thin" },
+        left: { style: "thin" },
+        right: { style: "thin" }
+      } // Garis tepi tipis
+    };
+
+    for (const type in groupedByType) {
+      if (groupedByType.hasOwnProperty(type)) {
+        const data = groupedByType[type];
+
+        const filteredData = data.map((item, index) => [
+          `${item.amount} pcs`,
+          changeFormatDate(item.date)
+        ]);
+
+        const sheetName = searchName(type);
+
+        // Tambahkan nama sheet dengan style header
+        XLSX.utils.sheet_add_aoa(ws, [[sheetName]], {
+          origin: { r: 0, c: colIndex },
+          style: headerStyle
+        });
+
+        // Tambahkan data dengan style nilai
+        filteredData.forEach((row, i) => {
+          const style =
+            i % 2 === 0
+              ? valueStyle
+              : {
+                  ...valueStyle,
+                  fill: { patternType: "solid", fgColor: { rgb: "F2F2F2" } }
+                }; // Latar belakang bergantian
+          XLSX.utils.sheet_add_aoa(ws, [row], {
+            origin: { r: rowIndex + i, c: colIndex },
+            style: style
+          });
+        });
+
+        colIndex += filteredData[0].length + 1;
+        rowIndex += filteredData.length + 1; // Naikkan rowIndex untuk header sheet berikutnya
+      }
+    }
+
+    let id =
+      new Date().getFullYear().toString() +
+      ("0" + (new Date().getMonth() + 1)).slice(-2);
+
+    XLSX.utils.book_append_sheet(wb, ws, `RECAP-${id}`);
+
+    XLSX.writeFile(wb, `RECAP_${id}.xlsx`);
   };
 
   return (
@@ -289,7 +411,7 @@ export default function Home() {
         <div className="tooltip tooltip-left" data-tip="Download recap">
           <button
             className="btn btn-square btn-info flex justify-center items-center"
-            onClick={() => console.log("Downloaded")}
+            onClick={exportToExcel}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
