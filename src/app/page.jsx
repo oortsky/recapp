@@ -180,7 +180,9 @@ export default function Home() {
 
     for (const type in groupedByType) {
       if (groupedByType.hasOwnProperty(type)) {
-        const data = groupedByType[type];
+        const data = groupedByType[type].sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
 
         const filteredData = data.map(item => [
           `${item.amount} pcs`,
