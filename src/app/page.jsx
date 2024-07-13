@@ -171,45 +171,6 @@ export default function Home() {
     return percentageChange.toFixed(2);
   };
 
-  //   const exportToExcel = () => {
-  //     const wb = XLSX.utils.book_new();
-  //     const ws = XLSX.utils.aoa_to_sheet([["A1-B1"]]);
-  //
-  //     let rowIndex = 2;
-  //     let colIndex = 0;
-  //
-  //     for (const type in groupedByType) {
-  //       if (groupedByType.hasOwnProperty(type)) {
-  //         const data = groupedByType[type];
-  //
-  //         const filteredData = data.map(item => [
-  //           `${item.amount} pcs`,
-  //           changeFormatDate(item.date)
-  //         ]);
-  //
-  //         const sheetName = searchName(type);
-  //
-  //         XLSX.utils.sheet_add_aoa(ws, [[`${sheetName}`]], {
-  //           origin: XLSX.utils.encode_cell({ r: 0, c: colIndex })
-  //         });
-  //
-  //         XLSX.utils.sheet_add_aoa(ws, filteredData, {
-  //           origin: XLSX.utils.encode_cell({ r: 1, c: colIndex })
-  //         });
-  //
-  //         colIndex += filteredData[0].length + 1;
-  //       }
-  //     }
-  //
-  //     let id =
-  //       new Date().getFullYear().toString() +
-  //       ("0" + (new Date().getMonth() + 1)).slice(-2);
-  //
-  //     XLSX.utils.book_append_sheet(wb, ws, `RECAP-${id}`);
-  //
-  //     XLSX.writeFile(wb, `RECAP_${id}.xlsx`);
-  //   };
-
   const exportToExcel = () => {
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet([["A1-B1"]]);
@@ -217,26 +178,24 @@ export default function Home() {
     let rowIndex = 2;
     let colIndex = 0;
 
-    // Style untuk header
     const headerStyle = {
-      font: { bold: true, color: { rgb: "FFFFFF" } }, // Tebal dan warna putih
-      fill: { patternType: "solid", fgColor: { rgb: "2F75B5" } }, // Warna biru untuk latar belakang
+      font: { bold: true, color: { rgb: "FFFFFF" } },
+      fill: { patternType: "solid", fgColor: { rgb: "2F75B5" } },
       border: {
         top: { style: "thin" },
         bottom: { style: "thin" },
         left: { style: "thin" },
         right: { style: "thin" }
-      } // Garis tepi tipis
+      }
     };
 
-    // Style untuk nilai
     const valueStyle = {
       border: {
         top: { style: "thin" },
         bottom: { style: "thin" },
         left: { style: "thin" },
         right: { style: "thin" }
-      } // Garis tepi tipis
+      }
     };
 
     for (const type in groupedByType) {
@@ -250,13 +209,11 @@ export default function Home() {
 
         const sheetName = searchName(type);
 
-        // Tambahkan nama sheet dengan style header
         XLSX.utils.sheet_add_aoa(ws, [[sheetName]], {
           origin: { r: 0, c: colIndex },
           style: headerStyle
         });
 
-        // Tambahkan data dengan style nilai
         filteredData.forEach((row, i) => {
           const style =
             i % 2 === 0
@@ -264,7 +221,7 @@ export default function Home() {
               : {
                   ...valueStyle,
                   fill: { patternType: "solid", fgColor: { rgb: "F2F2F2" } }
-                }; // Latar belakang bergantian
+                };
           XLSX.utils.sheet_add_aoa(ws, [row], {
             origin: { r: rowIndex + i, c: colIndex },
             style: style
@@ -272,7 +229,7 @@ export default function Home() {
         });
 
         colIndex += filteredData[0].length + 1;
-        rowIndex += filteredData.length + 1; // Naikkan rowIndex untuk header sheet berikutnya
+        rowIndex += filteredData.length + 1;
       }
     }
 
