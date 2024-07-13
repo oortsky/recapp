@@ -24,7 +24,7 @@ export default function Home() {
         console.error("Error fetching recaps:", error);
       }
     };
-    
+
     const fetchTypesData = async () => {
       try {
         const typesData = await fetchAPI("types");
@@ -47,7 +47,7 @@ export default function Home() {
     const currentDate = new Date();
     setTargetYear(currentDate.getFullYear());
     setTargetMonth(currentDate.getMonth() + 1);
-    
+
     setSelectedYear(targetYear);
     setSelectedMonth(targetMonth.toString());
   }, [targetYear, targetMonth]);
@@ -192,7 +192,11 @@ export default function Home() {
             Year
           </option>
           {[
-            ...new Set(recaps.map(data => new Date(data.date).getFullYear()))
+            ...new Set(
+              recaps
+                .map(data => new Date(data.date).getFullYear())
+                .sort((a, b) => a - b)
+            )
           ].map(year => (
             <option key={year} value={year}>
               {year}
@@ -234,23 +238,28 @@ export default function Home() {
                 </tr>
               </thead>
               <tbody>
-                {groupedByType[type].map(item => (
-                  <tr key={item.id}>
-                    <td>
-                      {item.amount}
-                      <span className="text-xs"> pcs</span>
-                    </td>
-                    <td>
-                      {item.income.toLocaleString("id-ID", {
-                        style: "currency",
-                        currency: "IDR",
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0
-                      })}
-                    </td>
-                    <td>{humanReadable(item.date)}</td>
-                  </tr>
-                ))}
+                {groupedByType[type]
+                  .sort(
+                    (a, b) =>
+                      new Date(a.date).getTime() - new Date(b.date).getTime()
+                  )
+                  .map(item => (
+                    <tr key={item.id}>
+                      <td>
+                        {item.amount}
+                        <span className="text-xs"> pcs</span>
+                      </td>
+                      <td>
+                        {item.income.toLocaleString("id-ID", {
+                          style: "currency",
+                          currency: "IDR",
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 0
+                        })}
+                      </td>
+                      <td>{humanReadable(item.date)}</td>
+                    </tr>
+                  ))}
               </tbody>
               <tfoot>
                 <tr>
