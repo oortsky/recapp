@@ -178,58 +178,26 @@ export default function Home() {
     let rowIndex = 2;
     let colIndex = 0;
 
-    const headerStyle = {
-      font: { bold: true, color: { rgb: "FFFFFF" } },
-      fill: { patternType: "solid", fgColor: { rgb: "2F75B5" } },
-      border: {
-        top: { style: "thin" },
-        bottom: { style: "thin" },
-        left: { style: "thin" },
-        right: { style: "thin" }
-      }
-    };
-
-    const valueStyle = {
-      border: {
-        top: { style: "thin" },
-        bottom: { style: "thin" },
-        left: { style: "thin" },
-        right: { style: "thin" }
-      }
-    };
-
     for (const type in groupedByType) {
       if (groupedByType.hasOwnProperty(type)) {
         const data = groupedByType[type];
 
-        const filteredData = data.map((item, index) => [
+        const filteredData = data.map(item => [
           `${item.amount} pcs`,
           changeFormatDate(item.date)
         ]);
 
         const sheetName = searchName(type);
 
-        XLSX.utils.sheet_add_aoa(ws, [[sheetName]], {
-          origin: { r: 0, c: colIndex },
-          style: headerStyle
+        XLSX.utils.sheet_add_aoa(ws, [[`${sheetName}`]], {
+          origin: XLSX.utils.encode_cell({ r: 0, c: colIndex })
         });
 
-        filteredData.forEach((row, i) => {
-          const style =
-            i % 2 === 0
-              ? valueStyle
-              : {
-                  ...valueStyle,
-                  fill: { patternType: "solid", fgColor: { rgb: "F2F2F2" } }
-                };
-          XLSX.utils.sheet_add_aoa(ws, [row], {
-            origin: { r: rowIndex + i, c: colIndex },
-            style: style
-          });
+        XLSX.utils.sheet_add_aoa(ws, filteredData, {
+          origin: XLSX.utils.encode_cell({ r: 1, c: colIndex })
         });
 
         colIndex += filteredData[0].length + 1;
-        rowIndex += filteredData.length + 1;
       }
     }
 
