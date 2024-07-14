@@ -11,7 +11,7 @@ export default function Home() {
   const [selectedMonth, setSelectedMonth] = useState("");
   const [filteredRecaps, setFilteredRecaps] = useState([]);
   const [groupedByType, setGroupedByType] = useState({});
-  const [isLoading, setIsLoading] = useState(true); // State to track loading status
+  const [isLoading, setIsLoading] = useState(true);
   const [targetYear, setTargetYear] = useState("");
   const [targetMonth, setTargetMonth] = useState("");
   const [previousMonthIncome, setPreviousMonthIncome] = useState(0);
@@ -173,9 +173,9 @@ export default function Home() {
 
   const exportToExcel = () => {
     const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.aoa_to_sheet([["A1-B1"]]);
+    const ws = XLSX.utils.aoa_to_sheet([]);
 
-    let rowIndex = 2;
+    let rowIndex = 0;
     let colIndex = 0;
 
     for (const type in groupedByType) {
@@ -192,14 +192,19 @@ export default function Home() {
         const sheetName = searchName(type);
 
         XLSX.utils.sheet_add_aoa(ws, [[`${sheetName}`]], {
-          origin: XLSX.utils.encode_cell({ r: 0, c: colIndex })
+          origin: XLSX.utils.encode_cell({ r: rowIndex, c: colIndex })
         });
 
         XLSX.utils.sheet_add_aoa(ws, filteredData, {
-          origin: XLSX.utils.encode_cell({ r: 1, c: colIndex })
+          origin: { r: rowIndex + 1, c: colIndex }
         });
 
         colIndex += filteredData[0].length + 1;
+
+        if (colIndex > 8) {
+          colIndex = 0;
+          rowIndex += filteredData.length + 2;
+        }
       }
     }
 
