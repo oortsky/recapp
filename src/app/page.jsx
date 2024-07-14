@@ -125,6 +125,18 @@ export default function Home() {
     return name;
   }
 
+  function searchPrice(id) {
+    const price = types
+      .find(type => type.id == id)
+      ?.price.toLocaleString("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      });
+    return price;
+  }
+
   const getTotalIncomeCurrentMonth = () => {
     const totalIncome = filteredRecaps.reduce(
       (accumulator, currentValue) => accumulator + currentValue.income,
@@ -184,19 +196,59 @@ export default function Home() {
           (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
         );
 
+        const sheetName = searchName(type);
+
+        const monthlyIncome = getTotalIncomeCurrentMonth().toLocaleString(
+          "id-ID",
+          {
+            style: "currency",
+            currency: "IDR",
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+          }
+        );
+
         const filteredData = data.map(item => [
           `${item.amount} pcs`,
           changeFormatDate(item.date)
         ]);
 
-        const sheetName = searchName(type);
+        const sheetPrice = searchPrice(type);
+
+        const totalIncome = data
+          .reduce((total, item) => total + item.income, 0)
+          .toLocaleString("id-ID", {
+            style: "currency",
+            currency: "IDR",
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+          });
+
+        const totalAmount = data.reduce(
+          (total, item) => total + item.amount,
+          0
+        );
+
+        filteredData.push([""]);
+
+        filteredData.push([
+          `${totalAmount} pcs × ${sheetPrice} = ${totalIncome}`
+        ]);
+
+        XLSX.utils.sheet_add_aoa(
+          ws,
+          [[`Total Penghasilan: ${monthlyIncome}`]],
+          {
+            origin: XLSX.utils.encode_cell({ r: 0, c: 0 })
+          }
+        );
 
         XLSX.utils.sheet_add_aoa(ws, [[`${sheetName}`]], {
-          origin: XLSX.utils.encode_cell({ r: rowIndex, c: colIndex })
+          origin: XLSX.utils.encode_cell({ r: rowIndex + 2, c: colIndex })
         });
 
         XLSX.utils.sheet_add_aoa(ws, filteredData, {
-          origin: { r: rowIndex + 1, c: colIndex }
+          origin: XLSX.utils.encode_cell({ r: rowIndex + 3, c: colIndex })
         });
 
         colIndex += filteredData[0].length + 1;
