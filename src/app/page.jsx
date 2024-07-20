@@ -189,6 +189,7 @@ export default function Home() {
 
     let rowIndex = 0;
     let colIndex = 0;
+    let maxRowLength = 0;
 
     for (const type in groupedByType) {
       if (groupedByType.hasOwnProperty(type)) {
@@ -235,6 +236,10 @@ export default function Home() {
           `${totalAmount} pcs × ${sheetPrice} = ${totalIncome}`
         ]);
 
+        const currentDataLength = filteredData.length + 1;
+
+        maxRowLength = Math.max(maxRowLength, currentDataLength);
+
         XLSX.utils.sheet_add_aoa(
           ws,
           [[`Total Penghasilan: ${monthlyIncome}`]],
@@ -255,7 +260,7 @@ export default function Home() {
 
         if (colIndex > 8) {
           colIndex = 0;
-          rowIndex += filteredData.length + 2;
+          rowIndex += maxRowLength + 2;
         }
       }
     }
