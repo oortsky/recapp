@@ -1,7 +1,9 @@
 "use client";
 
+import { fetchAPI, createAPI, deleteAPI, updateAPI } from "@/utils/api";
+import { searchIncome } from "@/utils/searchIncome";
 import React, { useEffect, useState } from "react";
-import { fetchAPI, createAPI, deleteAPI, updateAPI } from "../../utils/api";
+import RecapCard from "@/components/RecapCard";
 
 export default function Recaps() {
   const [recaps, setRecaps] = useState([]);
@@ -41,30 +43,6 @@ export default function Recaps() {
     fetchTypesData();
   }, []);
 
-  function humanReadable(str) {
-    const date = new Date(str);
-
-    const options = {
-      year: "numeric",
-      month: "long",
-      day: "numeric"
-    };
-
-    const humanReadableDate = date.toLocaleDateString("id-ID", options);
-    return humanReadableDate;
-  }
-
-  function searchName(id) {
-    const name = types.find(type => type.id == id)?.name;
-    return name;
-  }
-
-  function searchIncome(id, amount) {
-    const price = types.find(type => type.id == id)?.price;
-    const total = parseInt(amount) * price;
-    return total;
-  }
-
   const handleSubmit = async e => {
     e.preventDefault();
 
@@ -72,7 +50,7 @@ export default function Recaps() {
       amount: amount,
       type: selectedType,
       date: new Date(),
-      income: searchIncome(selectedType, amount)
+      income: searchIncome(selectedType, amount, types)
     };
 
     createAPI("recaps", data)
@@ -80,6 +58,7 @@ export default function Recaps() {
         setAmount("");
         setSelectedType("");
         console.log("Data created:", response);
+        alert("Success Added Recap");
       })
       .catch(error => {
         console.error("Error creating data:", error);
@@ -154,71 +133,20 @@ export default function Recaps() {
     <div className="w-full flex flex-col p-4 py-20">
       <h1 className="text-2xl font-bold mb-2">Recap History</h1>
       <ul>
-        {recaps.map(recap => (
-          <div key={recap.id} className="w-full stats shadow my-2">
-            <div className="flex justify-between gap-2 stat">
-              <div className="flex flex-col gap-2">
-                <div className="stat-title">{searchName(recap.type)}</div>
-                <div className="stat-value">
-                  {recap.amount}
-                  <span className="text-sm font-normal">pcs</span>
-                </div>
-                <div className="stat-desc">{humanReadable(recap.date)}</div>
-                <div className="stat-desc">
-                  Income:{" "}
-                  {recap.income.toLocaleString("id-ID", {
-                    style: "currency",
-                    currency: "IDR",
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0
-                  })}
-                </div>
-              </div>
-              <div className="dropdown dropdown-end">
-                <div
-                  tabIndex={0}
-                  role="button"
-                  className="btn btn-square btn-xs btn-ghost"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    className="inline-block h-5 w-5 stroke-current"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"
-                    ></path>
-                  </svg>
-                </div>
-                <ul
-                  tabIndex={0}
-                  className="flex flex-col gap-2 dropdown-content menu bg-base-100 rounded-box z-40 w-36 p-2 shadow"
-                >
-                  <li>
-                    <button
-                      className="btn btn-sm btn-info"
-                      onClick={() => handleUpdateModal(recap.id)}
-                    >
-                      Edit
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      className="btn btn-sm btn-error"
-                      onClick={() => handleDeleteModal(recap.id)}
-                    >
-                      Delete
-                    </button>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        ))}
+        {recaps
+          .sort((a, b) => new Date(b.date) - new Date(a.date))
+          .map(recap => (
+            <RecapCard
+              id={recap.id}
+              type={recap.type}
+              types={types}
+              amount={recap.amount}
+              date={recap.date}
+              income={recap.income}
+              handleUpdateModal={handleUpdateModal}
+              handleDeleteModal={handleDeleteModal}
+            />
+          ))}
       </ul>
       <div className="fixed w-fit bottom-20 right-4">
         <div className="tooltip tooltip-left" data-tip="Add new recap">
