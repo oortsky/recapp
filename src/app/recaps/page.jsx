@@ -58,7 +58,6 @@ export default function Recaps() {
         setAmount("");
         setSelectedType("");
         console.log("Data created:", response);
-        alert("Success Added Recap");
       })
       .catch(error => {
         console.error("Error creating data:", error);
